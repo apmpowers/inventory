@@ -1,0 +1,346 @@
+package PowersFinal;
+
+import java.util.Scanner;
+import java.io.*;
+
+public class PowersFinal {
+	private Scanner input = new Scanner(System.in);
+	private Item[] items = new Item[100];
+	private final double sales_tax = 0.07;
+	private int counter = 0;
+	
+	public PowersFinal() {
+		
+		try(Scanner file = new Scanner(Paths.get("./data.inventory.txt"))) {
+			int count = 0;
+			while(file.hasNext()) {
+				items[count++] = new Item(file.next(), file.next(), file.nextDouble(), file.nextInt());
+			}
+		}
+	}
+	
+	public static void main(String[] args) {
+		PowersFinal foo = new PowersFinal();
+		foo.mainMenu();
+	}
+
+	public void mainMenu() {
+		// display menu and ask for user selection (validate)
+		String username = "";
+		String password = "";
+		String admin = "admin";
+		String Password = "password";
+		boolean exit = true;
+		
+		while (exit) {
+		System.out.println("1: Admin Menu");
+		System.out.println("2: User Menu");
+		System.out.println("3: Exit");
+
+		int option = 0;
+		option = input.nextInt();
+		while (option < 1 || option > 3)
+		{
+			System.out.println("Error. Please enter a valid option");
+			option = input.nextInt();
+		}
+		
+
+		switch (option) 
+		{
+		case 1:
+			// verify the admin login
+			
+			input.nextLine();
+			System.out.println("(Username is admin) Username: ");
+			username = input.next();
+			System.out.println("(Password is password) Password: ");
+			password = input.next();
+			
+			// if login correct go to the admin menu
+			if(username.equals(admin) && password.equals(Password)) {
+				System.out.println("Login Successful");
+				adminMenu();
+			}
+			else {
+				System.out.println("Username and Password are Incorrect");
+			}
+			break;
+			
+			
+		case 2:
+			userMenu();
+			break;
+
+		case 3:
+			// confirm they want to exit and then exit
+			System.out.println("Are you sure you want to exit? 1 - Exit 2 - Continue");
+			int exitProgram = input.nextInt();
+			if (exitProgram == 1)
+			{
+				exit = true;
+			}
+			
+			break;
+		}
+	} while (!exit);
+	}
+
+	public void adminMenu() {
+		// display menu and ask for user selection (validate)
+		System.out.println("1: Add New Item to Inventory");
+		System.out.println("2: Update Item in Inventory");
+		System.out.println("3: Delete Item from Inventory");
+	
+		int option = input.nextInt();
+		while (option < 1 || option > 3)
+		{
+			System.out.println("Error. Please Enter a Valid Option");
+			option = input.nextInt();
+		}
+		
+		int found = -1;
+		switch (option) {
+		case 1:
+			addItem();
+			break;
+
+		case 2:
+			System.out.println("What item would you like to update?");
+
+				found = searchForItem();
+
+				if (found != -1) {
+					updateItem(found);
+				}
+
+				break;
+			
+
+		case 3:
+			System.out.println("What item would you like to delete? ");
+			found = input.nextInt();
+			deleteItem(found);
+			break;
+
+		case 4:
+			return;
+		}
+	}
+
+
+
+	public void userMenu() {
+		// display menu and ask for user selection (validate)
+			System.out.println("1: Display Items in Inventory");
+			System.out.println("2: Purchase Items");
+			System.out.println("3: Search for Items");
+			System.out.println("4: Return to Previous Menu");
+		
+			int option = input.nextInt();
+			while (option < 1 || option > 4)
+			{
+				System.out.println("Error. Please Enter a Valid Option");
+				option = input.nextInt();
+			}
+		
+			int found = -1;
+			
+			switch (option) {
+			
+			case 1:
+				displayAllItems();
+				
+				break;
+
+			case 2:
+				System.out.println("Enter item you would like to purchase: ");
+				found = input.nextInt();
+				purchaseItem(found);
+				
+				break;
+			
+			case 3:
+				int index = searchForItem();
+				if (index == -1)
+					System.out.println("Item not found");
+				else
+				{
+					System.out.println("Item found: ");
+					System.out.println(items[index]);
+				}
+
+			default:
+				
+				break;
+			}
+	}
+	
+
+
+	private void displayAllItems() {
+		if(counter == 0)
+			System.out.println("There are no items in the inventory.");
+		for (int i = 0; i < counter; i++) {
+			System.out.println("These are the items currently in the inventory: " + items[i]);
+		}
+	}
+
+
+	public int searchForItem() {
+		if(counter == 0)
+			System.out.println("There are no items in the inventory.");
+		input.nextLine();
+		System.out.println("Please enter the ID of the item or the name of the item: ");
+		String id = input.nextLine();
+		int index = -1;
+		for (int i = 0; i <counter; i++)
+		{
+			if(id.equals(items[i].getId()) || id.equals(items[i].getName()))
+			{
+				index = i;
+			}
+		}
+		return index;
+	}
+
+	private void deleteItem(int index) {
+		if (counter == 0)
+			System.out.println("There are no items in the inventory.");
+		Item[] temp = items;
+		if (index >= counter)
+		{
+			System.out.println("That item does not exist");
+		}
+		else
+		{
+			for (int i = index + 1; i < temp.length; i++)
+				temp[i-1] = temp[i];
+			}
+			counter --;
+		}
+		// items = temp;
+	
+
+	private void updateItem(int index) {
+		if (counter ==0)
+			System.out.println("There are no items in the inventory");
+		if (index > counter)
+		{
+			System.out.println("Item cannot be updated");
+		}
+		else
+		{
+			input.nextLine();
+			System.out.println("Enter Item ID: ");
+			String id = input.nextLine();
+			System.out.println("Enter Item Name: ");
+			String name = input.nextLine();
+			System.out.println("Enter Item Price: ");
+			double price = Double.parseDouble(input.nextLine());
+			System.out.println("Enter Quantity of Item: ");
+			int quantity =Integer.parseInt(input.nextLine());
+			items[index].setId(id);
+			items[index].setName(name);
+			items[index].setPrice(price);
+			items[index].setQuantity(quantity);
+		}
+	}
+
+	private void addItem() {
+		input.nextLine();
+	System.out.println("Enter Item ID: ");
+	String id = input.nextLine();
+	System.out.println("Enter Item Name: ");
+	String name = input.nextLine();
+	System.out.println("Enter Item Price: ");
+	double price = Double.parseDouble(input.nextLine());
+	System.out.println("Enter Quantity of Item: ");
+	int quantity =Integer.parseInt(input.nextLine());
+	items[counter]= new Item(id, name, price, quantity);
+	counter ++;
+	}
+
+private double totalCost = 0;
+	private void purchaseItem(int index) {
+		if( index > counter)
+		{
+			System.out.println("Item cannot be purchased. ");
+		}
+		else
+		{
+			System.out.println("How many" + items[index].getName() + "would you like to purchase?" );
+			int quantity = input.nextInt();
+			while (quantity <= 0)
+			{
+				System.out.println("Error. Invalid quantity.");
+				quantity = input.nextInt();
+			}
+			int itemNumber = items[index].getQuantity();
+			if (itemNumber != 0 && itemNumber > quantity) {
+				items[index].setQuantity(itemNumber - quantity);
+				totalCost += quantity * items[index].getPrice() + quantity * items[index].getPrice() * sales_tax;
+				System.out.println("Order:" + totalCost);
+		}
+			else
+			{
+				System.out.println("Item not available.");
+			}
+	}
+
+}
+
+	class Item {
+
+		private String id;
+		private String name;
+		private double price;
+		private int quantity;
+
+	//add constructors
+	public Item(String id, String name, double price, int quantity) {
+		this.id = id;
+		this.name = name;
+		this.price = price;
+		this.quantity = quantity;
+	}
+	
+	//add get and set methods
+	public String getId() {
+		return id;
+	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+	
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	public double getPrice() {
+		return price;
+	}
+	
+	public void setPrice(double price) {
+		this.price = price;
+	}
+	
+	public int getQuantity() {
+		return quantity;
+	}
+	
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
+	
+	public String toString() {
+		return "Item [id = " + id + ", name = " + name +", price = " + price +", quantity = " + quantity + "]";
+	}
+	
+}
+}
